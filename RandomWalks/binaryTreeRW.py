@@ -1,4 +1,4 @@
-from markovChain import *
+from randomWalk import *
 import matplotlib.pyplot as plt
 
 states = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
@@ -10,7 +10,9 @@ print("LIST OF STATES: ", states)
 GraphMixtureResults = []
 objs = [BinaryTreeGraphRW(states[i],lazy) for i in range(len(states))]
 for i in range(len(states)):
-    GraphMixtureResults.append(objs[i].calculateMixingTime(eps))
+    result = objs[i].calculateMixingTime(eps)
+    print("i = ",states[i]," mixing time = ",result)
+    GraphMixtureResults.append(result)
 
 print(GraphMixtureResults)
 x_axis = states

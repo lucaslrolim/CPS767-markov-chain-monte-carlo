@@ -10,7 +10,7 @@ class RandomWalk():
 
         self.transitions = []
         self.currentState = 0
-        self.stationaryDistribution = None
+        self.stationaryDistribution = []
         self.pi = [0] * numberOfNodes
         self.pi[self.currentState] = 1
 
@@ -124,21 +124,22 @@ class BinaryTreeGraphRW(RandomWalk):
 
 class GridGraphRW(RandomWalk):
     """Random Walk on a Grid graph structure"""
+    neighbors = None
     def mapNeightbors(self):
         valid_values = list(range(self.numberOfNodes))
+        v = 0
         neighbors = [[] for i in range(self.numberOfNodes)]
         n_rows = int(math.sqrt(self.numberOfNodes))
         rows = []
         for i in range(n_rows):
-            r = []
-            for j in range(n_rows):
-                r.append(valid_values.pop(0))
+            r = list(range(v,v+n_rows))
             rows.append(r)
+            v = v+n_rows
         for line in rows:
             for element in line:
                 if(line.index(element) != 0):
                     neighbors[element].append(line[line.index(element) - 1])
-                elif (line.index(element) != len(line)-1):
+                if (line.index(element) != len(line)-1):
                     neighbors[element].append(line[line.index(element) + 1])
             if(rows.index(line) != 0):
                 for element in line:
@@ -146,23 +147,26 @@ class GridGraphRW(RandomWalk):
             if(rows.index(line) != len(rows)-1):
                 for element in line:
                     neighbors[element].append(rows[rows.index(line) + 1][line.index(element)])
+        print("neighbors set")
         return neighbors
 
-    def generateTransitionMatrix(self): 
+    def generateTransitionMatrix(self):
+        neighbors =  self.mapNeightbors()
+        self.neighbors = neighbors
         for i in range(0,self.numberOfNodes):
             stateTransitions = [0] * self.numberOfNodes
             stateTransitions[i] = self.lazy
-            neighbors = self.mapNeightbors()
             for j in neighbors[i]:
                 stateTransitions[int(j)] = (1 - self.lazy ) / len(neighbors[i])
             self.transitions.append(stateTransitions)
+        self.setStationaryDistribution()
 
     def setStationaryDistribution(self):
         self.stationaryDistribution = []
         g_total = 0
-        neighbors = self.mapNeightbors()
+        neighbors = self.neighbors
         for i in range(0,self.numberOfNodes):
-            g_total += neighbors(i)
+            g_total += len(neighbors[i])
         for j in range(self.numberOfNodes):
-            self.stationaryDistribution.append(neighbors[j]/g_total)
+            self.stationaryDistribution.append(len(neighbors[j])/g_total)
 
