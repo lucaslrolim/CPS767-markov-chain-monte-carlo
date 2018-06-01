@@ -1,5 +1,4 @@
 from gambler import * 
-
 def estimateExpectedValue(machine,n,budget):
     games = 0
     iteration = 0

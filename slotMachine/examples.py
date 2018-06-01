@@ -1,11 +1,23 @@
 from utilityFunctions import * 
+import random
 
-budget = 40
-g = Gambler(budget)
 
-machine  = SlotMachine('EdgeReward',0.1)
+machine  = SlotMachine('EdgeReward',0,5,'bx',1)
 
-n = pow(10,4)
-print(g.play(machine,10))
-print(machine.getJeckpot())
-#print('Variance: ', estimateVariance(machine,n,budget))
+## N players playing 10 times on a 0.1 house advantage machine
+n_players = pow(10,5)
+budget = 100
+players = [Gambler(budget) for i in range(n_players)]
+for g in players:
+    u  = random.randint(0, budget)
+    g.play(machine,10)
+
+jp = machine.getJeckpot()
+print('Jackpot', jp)
+print('ERROR', jp/(n_players*10) )
+
+sumPrize = 0
+prizesLen = 0 
+
+print("MEAN PRIZE: ", machine.getMeanPrize())
+

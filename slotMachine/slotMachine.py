@@ -1,19 +1,21 @@
 import random
 import math
-
+from aliasMethod import *
 class SlotMachine():
-    figures = 3
     jackpot = 0
-    def __init__(self,reward_function,houseEdge,slots = 3,prizeCriteria = 'eq',bid = 1):
+    prizesConceived = []
+    def __init__(self,reward_function,houseEdge,figures = 3,prizeCriteria = 'eq',bid = 1, slots = 4):
         self.reward_function = reward_function
         self.bid = bid
         self.prizeCriteria = prizeCriteria
-        self.states = list(range(1,self.figures+1))
+        self.figures = figures
+        self.states = list(range(1,figures+1))
         self.statesCombination = math.factorial(slots)
         self.slots = slots
         self.setPrizes()
         self.setProbabilities(houseEdge)
-
+        self.j,self.q = alias_setup(self.prizeStatesProb)
+        
     def setPrizes(self):
         self.totalPrize = 0
         self.prize = {}
@@ -22,18 +24,27 @@ class SlotMachine():
             self.totalPrize += self.prize[figure]
 
     def applyPrizeCriteria(self,figure):
-        if(self.prizeCriteria == '10x'):
-            return figure * 10
+        if(self.prizeCriteria == 'bx'):
+            p = 0
+            temp = self.figures
+            prob = self.figures*(1+self.figures)/2
+            for i in (self.states):
+                p += i * temp
+                temp -= 1
+            self.mean_prize = - (1/prob) * p * self.bid
+            return figure * self.bid
         if(self.prizeCriteria == 'eq'):
-            return self.bid * 5
+            self.mean_prize = - 2 * self.bid
+            return 2*self.bid
             
     def setProbabilities(self,houseEdge):
-        mean_prize = -5
-        self.probabilityToWin = (houseEdge - mean_prize)/(self.bid - mean_prize)
-        self.prizeStatesProb = {}
-        for figure in self.states:
-            index = len(self.states) + 1 - figure
-            self.prizeStatesProb[figure] = self.prize[index]
+        self.prizeStatesProb = []
+        prob = 1 / (self.figures*(1+self.figures)/2)
+        index = 1
+        for figure in reversed(self.states):
+            self.prizeStatesProb.append(figure * prob) 
+            index += 1
+        self.probabilityToWin = (houseEdge - self.mean_prize)/(self.bid - self.mean_prize)
 
     def EdgeReward(self):
         u = random.uniform(0, 1)
@@ -41,13 +52,9 @@ class SlotMachine():
             self.jackpot += self.bid
             return -self.bid
         else:
-            r_state = random.uniform(0, 1)
-            figure = 1 
-            s =  self.prizeStatesProb[figure]
-            while(s <= self.totalPrize * r_state):
-                s += self.prizeStatesProb[figure]
-                figure += 1
+            figure = self.states[alias_draw(self.j,self.q)]
             self.jackpot -= self.prize[figure]
+            self.prizesConceived.append(self.prize[figure])
             return self.prize[figure]
 
     def getJeckpot(self):
@@ -60,37 +67,15 @@ class SlotMachine():
             sample.append(self.states[u-1])
         return sample
 
-    def simpleReward(self):
-        slotResult = self.generateGame()
-        rewardResult = -self.bid
-        for figure in slotResult:
-            if(slotResult.count(figure) == self.slots):
-                rewardResult += figure * 2 * self.bid
-                break
-            # if(slotResult.count(figure) == self.slots - 1):
-            #     rewardResult += figure  * bid
-            #     break
-        return rewardResult
-
     def play(self):
         rewardFunction = getattr(self, self.reward_function)
         reward = rewardFunction()
         return reward
 
-class Gambler():
-    motivation = 1
-    games = 0
-    def __init__(self,budget):
-        self.wallet = budget
-    def gamesUntilZero(self,machine):
-        while(self.wallet > 0 and self.motivation > 0):
-            reward = machine.play()
-            self.wallet += reward
-            self.games += 1
-        return self.games
-    def play(self,machine,numberOfPlays):
-        while(self.games < numberOfPlays):
-            reward = machine.play()
-            self.wallet += reward
-            self.games += 1
-        return self.wallet
+    def getPrizesConceived(self):
+        return self.prizesConceived
+        
+    def getMeanPrize(self):
+        mp = sum(self.prizesConceived)/len(self.prizesConceived)
+        return mp
+    
