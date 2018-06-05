@@ -3,7 +3,6 @@ import math
 from aliasMethod import *
 class SlotMachine():
     jackpot = 0
-    prizesConceived = []
     def __init__(self,reward_function,houseEdge,figures = 3,prizeCriteria = 'eq',bid = 1, slots = 4):
         self.reward_function = reward_function
         self.bid = bid
@@ -15,6 +14,7 @@ class SlotMachine():
         self.setPrizes()
         self.setProbabilities(houseEdge)
         self.j,self.q = alias_setup(self.prizeStatesProb)
+        self.prizesConceived = []
         
     def setPrizes(self):
         self.totalPrize = 0
@@ -32,6 +32,7 @@ class SlotMachine():
                 p += i * temp
                 temp -= 1
             self.mean_prize = - (1/prob) * p * self.bid
+            print('MEAN PRIZE ',self.mean_prize)
             return figure * self.bid
         if(self.prizeCriteria == 'eq'):
             self.mean_prize = - 2 * self.bid
@@ -76,6 +77,9 @@ class SlotMachine():
         return self.prizesConceived
         
     def getMeanPrize(self):
-        mp = sum(self.prizesConceived)/len(self.prizesConceived)
+        if(len(self.prizesConceived) != 0):
+            mp = sum(self.prizesConceived)/len(self.prizesConceived)
+        else:
+            mp = 0
         return mp
     

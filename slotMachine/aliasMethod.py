@@ -47,9 +47,3 @@ def alias_draw(J, q):
     else:
         return J[kk]
  
- 
-# Get a random probability vector.
-probs = [0.5,0.5,0]
- 
-# Construct the table.
-J, q = alias_setup(probs)
